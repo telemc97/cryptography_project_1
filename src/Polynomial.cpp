@@ -3,6 +3,8 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 Polynomial::Polynomial(uint32 deg, const Vector(float64)& coeffs) : degree(deg), coefficients(coeffs) {
     std::reverse(coefficients.begin(), coefficients.end());
@@ -69,54 +71,6 @@ Polynomial Polynomial::operator*(const Polynomial& other) const {
     return Polynomial(new_degree, result_coeffs);
 }
 
-String Polynomial::toString() const {
-    std::string result = "";
-    bool first_term = true;
-    for (int32 i = degree; i >= 0; --i) {
-        if (coefficients[i] == 0.0) {
-            continue;
-        }
-
-        if (!first_term) {
-            if (coefficients[i] > 0) {
-                result += " + ";
-            } else {
-                result += " - ";
-            }
-        } else {
-            if (coefficients[i] < 0) {
-                result += "-";
-            }
-        }
-
-        if (std::abs(coefficients[i]) != 1.0 || i == 0) {
-            result += std::to_string(std::abs(coefficients[i]));
-        }
-
-        if (i > 0) {
-            result += "x";
-            if (i > 1) {
-                result += "^" + std::to_string(i);
-            }
-        }
-        first_term = false;
-    }
-
-    if (first_term) {
-        result += "0";
-    }
-
-    return result;
-}
-
-uint32 Polynomial::getDegree() const {
-    return degree;
-}
-
-const Vector(float64)& Polynomial::getCoefficients() const {
-    return coefficients;
-}
-
 Polynomial Polynomial::operator/(const Polynomial& other) const {
     if (other.degree == 0 && other.coefficients[0] == 0.0) {
         throw std::invalid_argument("Division by zero polynomial");
@@ -171,6 +125,68 @@ Polynomial Polynomial::operator%(const Polynomial& other) const {
     }
 
     return remainder;
+}
+
+uint32 Polynomial::getDegree() const {
+    return degree;
+}
+
+const Vector(float64)& Polynomial::getCoefficients() const {
+    return coefficients;
+}
+
+String Polynomial::toString() const {
+    std::string result = "";
+    bool first_term = true;
+    for (int32 i = degree; i >= 0; --i) {
+        if (coefficients[i] == 0.0) {
+            continue;
+        }
+
+        if (!first_term) {
+            if (coefficients[i] > 0) {
+                result += " + ";
+            } else {
+                result += " - ";
+            }
+        } else {
+            if (coefficients[i] < 0) {
+                result += "-";
+            }
+        }
+
+        if (std::abs(coefficients[i]) != 1.0 || i == 0) {
+            std::stringstream ss;
+            float64 current_coeff = std::abs(coefficients[i]);
+            if (current_coeff == floor(current_coeff)) {
+                ss << static_cast<int64>(current_coeff);
+            } else {
+                ss << std::fixed << std::setprecision(3) << current_coeff;
+                std::string s = ss.str();
+                s.erase(s.find_last_not_of('0') + 1, std::string::npos);
+                if (s.back() == '.') {
+                    s.pop_back();
+                }
+                ss.str(""); // Clear the stringstream
+                ss << s;    // Put the formatted string back
+            }
+            result += ss.str();
+        }
+
+        if (i > 0) {
+            result += "x";
+            if (i > 1) {
+                result += "^" + std::to_string(i);
+            }
+        }
+        first_term = false;
+    }
+
+    if (first_term) {
+        result += "0";
+    }
+
+    return result;
 }
 
 bool Polynomial::isZero() const {
