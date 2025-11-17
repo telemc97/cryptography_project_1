@@ -8,6 +8,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <map>
 
 #define int8   signed char
 #define int16  short
@@ -30,8 +31,9 @@
 #define wide_char wchar_t
 
 // Macros for std::array and std::string
-#define Array(type, size)  std::array<type, size>
-#define Vector(type)       std::vector<type>
-#define String             std::string
+#define Array(type, size)         std::array<type, size>
+#define Vector(type)              std::vector<type>
+#define String                    std::string
+#define Map(keyType, valueType)   std::map<keyType, valueType>
 
 #endif //CRYPTOGRAPHY1_DATATYPES_H

@@ -63,3 +63,21 @@ wide_char Utils::convertIntToGreekChar(int integer) {
         default: return L' '; // Return a space for out-of-range integers
     }
 }
+
+#include <cctype> // For std::tolower and std::isalpha
+
+int8 Utils::convertEnglishCharToInt(char c) {
+    c = static_cast<char>(std::tolower(c)); // Convert to lowercase
+
+    if (c >= 'a' && c <= 'z') {
+        return c - 'a'; // 'a' becomes 0, 'b' becomes 1, etc.
+    }
+    return -1;
+}
+
+char Utils::convertIntToEnglishChar(uint8 i) {
+    if (i >= 0 && i < 26) {
+        return static_cast<char>('a' + i); // 0 becomes 'a', 1 becomes 'b', etc.
+    }
+    return ' '; // Return a space for out-of-range integers
+}

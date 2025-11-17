@@ -12,6 +12,8 @@ class Utils {
 public:
     static int8 convertGreekCharToInt(wide_char character);
     static wide_char convertIntToGreekChar(int integer);
+    static int8 convertEnglishCharToInt(char c);
+    static char convertIntToEnglishChar(uint8 i);
 
 };
 
