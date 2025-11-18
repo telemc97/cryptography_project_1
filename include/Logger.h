@@ -30,6 +30,19 @@ public:
     void log(const String& msg) const;
 
     /**
+     * @brief Prints a separator line to the console.
+     *        This is useful for sectioning off different parts of the log output.
+     */
+    void print_separator() const;
+
+    /**
+     * @brief Prints a specified number of empty lines to the console.
+     *        This can be used to add vertical spacing to the log output.
+     * @param lines_to_print The number of empty lines to print. Defaults to 1.
+     */
+    void print_empty_line(int8 lines_to_print = 1) const;
+
+    /**
      * @brief Logs a formatted string message.
      *
      * This function uses a printf-like format string and a variable number of

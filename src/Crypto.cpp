@@ -69,92 +69,165 @@ Vector(uint32) Crypto::findDistances(const String& word) const {
     return distances;
 }
 
-Vector(String) Crypto::splitEncryptedMessageToColumns(uint32 keyLength) const {
-    Vector(String) blocks;
+Vector(String) Crypto::splitEncryptedMessageReturnRows(uint32 keyLength) const {
+    if (keyLength == 0) {
+        return {};
+    }
+
+    Vector(String) columns = this->splitEncryptedMessageReturnColumns(keyLength);
+    if (columns.empty()) {
+        return {};
+    }
+
+    // Determine the number of rows, which is the length of the longest column
+    size_t num_rows = 0;
+    for (const auto& col : columns) {
+        if (col.length() > num_rows) {
+            num_rows = col.length();
+        }
+    }
+
+    Vector(String) rows(num_rows);
+    for (size_t i = 0; i < num_rows; ++i) {
+        for (size_t j = 0; j < keyLength; ++j) {
+            if (i < columns[j].length()) {
+                rows[i] += columns[j][i];
+            }
+        }
+    }
+
+    return rows;
+}
+
+Vector(String) Crypto::splitEncryptedMessageReturnColumns(uint32 keyLength) const {
+    Vector(String) columns(keyLength); // Initialize with keyLength empty strings
 
     if (keyLength == 0) {
         return {}; // Handle invalid keyLength
     }
 
-    for (uint32 i = 0; i < this->message.length(); i += keyLength) {
-        blocks.push_back(this->message.substr(i, keyLength));
+    for (uint32 i = 0; i < this->message.length(); ++i) {
+        columns[i % keyLength] += this->message[i];
     }
 
-    return blocks;
+    return columns;
 }
 
-// Vector(String) Crypto::splitEncryptedMessageToColumns(uint32 keyLength) const {
-//     Vector(String) columns(keyLength); // Initialize with keyLength empty strings
-//
-//     if (keyLength == 0) {
-//         return {}; // Handle invalid keyLength
-//     }
-//
-//     for (uint32 i = 0; i < this->message.length(); ++i) {
-//         columns[i % keyLength] += this->message[i];
-//     }
-//
-//     return columns;
-// }
-
-String Crypto::findMostFrequentChars(const Vector(String)& blocks) const {
-    if (blocks.empty() || blocks[0].empty()) {
-        return "";
+uint32 Crypto::findKeyLengthKasiski(const uint32 min_word_length) {
+    Vector(WordOccurrences) occurrences = this->findRecurringWords(min_word_length);
+    if (occurrences.empty()) {
+        return 0; // Or handle error appropriately
     }
-
-    // Determine the number of positions to check (length of the blocks)
-    size_t numPositions = blocks[0].length();
-    String mostFrequentChars;
-
-    // Iterate through each character position (column)
-    for (size_t pos = 0; pos < numPositions; ++pos) {
-        Map(char, int) counts;
-
-        // Gather all characters at the current position from all blocks
-        for (const auto& block : blocks) {
-            if (pos < block.length()) { // Safety check for uneven blocks
-                counts[block[pos]]++;
-            }
-        }
-
-        // Find the most frequent character for the current position
-        char mostFrequentChar = ' ';
-        int maxCount = 0;
-        if (!counts.empty()) {
-            for (const auto& pair : counts) {
-                if (pair.second > maxCount) {
-                    maxCount = pair.second;
-                    mostFrequentChar = pair.first;
-                }
-            }
-            mostFrequentChars += mostFrequentChar;
-        }
-    }
-
-    return mostFrequentChars;
-}
-
-int32 Crypto::findKeyLengthKasiski() {
-    int8 min_word_lenght = 4;
-    Vector(WordOccurrences) occurrences = this->findRecurringWords(min_word_lenght);
     Vector(uint32) word_distances = this->findDistances(occurrences[0].word);
-    int32 key_lenght = Math::findGCD(word_distances);
+    uint32 key_lenght = Math::findGCD(word_distances);
     return key_lenght;
+}
+
+char Crypto::findMostFrequentCharInString(const String& text) const {
+    Map(char, int) charCounts;
+    int maxCount = 0;
+    char mostFrequent = ' '; // Default to space if no alphabetic chars
+
+    for (char c : text) {
+        if (std::isalpha(c)) {
+            char upper_c = std::toupper(c);
+            charCounts[upper_c]++;
+            if (charCounts[upper_c] > maxCount) {
+                maxCount = charCounts[upper_c];
+                mostFrequent = upper_c;
+            }
+        }
+    }
+    return mostFrequent;
 }
 
 String Crypto::decryptMessageWithKey(const String key) {
     String decrypted_message;
-    Vector(String) splitteg_message = this->splitEncryptedMessageToColumns(key.length());
-    Vector(String)::iterator it;
-    // Iterate over message collumns
-    for (it = splitteg_message.begin(); it != splitteg_message.end(); ++it) {
+    Vector(String) splitted_message = this->splitEncryptedMessageReturnRows(key.length());
+    // Iterate over message columns
+    for (Vector(String)::iterator it = splitted_message.begin(); it != splitted_message.end(); ++it) {
         // Iterate over String characters
         for (int i = 0; i < it->length(); i++) {
-            int8 encrypted_char = Utils::convertEnglishCharToInt((*it)[i]);
-            int8 key_char = Utils::convertEnglishCharToInt(key[i]);
-            char dectypted_char = Utils::convertIntToEnglishChar(Math::mod26(encrypted_char-key_char));
-            decrypted_message+=dectypted_char;
+            const int8 encrypted_char = Utils::convertEnglishCharToInt((*it)[i]);
+            const int8 key_char = Utils::convertEnglishCharToInt(key[i]);
+            const char decrypted_char = Utils::convertIntToEnglishChar(Math::mod26(encrypted_char-key_char));
+            decrypted_message+=decrypted_char;
         }
     }
     return decrypted_message;
 }
+
+float32 Crypto::calculateIC(const String& text) {
+    // Filter out non-alphabetic characters and convert to uppercase for consistent counting
+    String filteredText;
+    for (char c : text) {
+        if (std::isalpha(c)) {
+            filteredText += std::toupper(c);
+        }
+    }
+
+    if (filteredText.length() < 2) {
+        return 0.0; // Not enough characters to calculate IC
+    }
+
+    Map(char, int) charCounts;
+    for (char c : filteredText) {
+        charCounts[c]++;
+    }
+
+    float64 sum_fi_minus_1 = 0.0;
+    for (const auto& pair : charCounts) {
+        int fi = pair.second;
+        sum_fi_minus_1 += (float64)fi * (fi - 1.0);
+    }
+
+    float64 N = filteredText.length();
+    if (N * (N - 1) == 0) {
+        return 0.0; // Avoid division by zero if N is 0 or 1
+    }
+
+    return sum_fi_minus_1 / (N * (N - 1));
+}
+
+uint32 Crypto::findKeyLengthFriedman(const uint32 max_key_length) {
+    uint32  best_key_length = 0;
+    float64 english_ic = 0.067;
+    float64 min_ic_difference = 1.0;
+    String message = this->message;
+
+    for (uint32 key_length = 2; key_length < max_key_length; key_length++) {
+
+        Vector(String) splitted_message_collums = this->splitEncryptedMessageReturnColumns(key_length);
+
+        Vector(float64) coincidence_indices;
+        for (const String& column : splitted_message_collums) {
+            coincidence_indices.push_back(calculateIC(column));
+        }
+
+        if (!coincidence_indices.empty()) {
+            float64 average_ic = Math::average(coincidence_indices);
+            float64 ic_differrence = std::abs(average_ic - english_ic);
+
+            if (ic_differrence < min_ic_difference) {
+                min_ic_difference = ic_differrence;
+                best_key_length = key_length;
+            }
+        }
+    }
+
+    if (best_key_length == 0) {
+        return 1;
+    }
+
+    return best_key_length;
+}
+
+String Crypto::getKeyWithFrequencyAnalysis(uint32 key_length) {
+    Vector(String) text_collums = this->splitEncryptedMessageReturnColumns(key_length);
+    String key;
+    for (Vector(String)::iterator it = text_collums.begin(); it != text_collums.end(); ++it) {
+        key+=this->findMostFrequentCharInString(*it);
+    }
+    return key;
+}
+

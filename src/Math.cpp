@@ -29,3 +29,15 @@ int Math::mod26(int a) {
     }
     return result;
 }
+
+float64 Math::average(const Vector(float64)& values) {
+    if (values.empty()) {
+        return 0.0f; // Return 0 for an empty vector to avoid division by zero
+    }
+
+    float64 sum = 0.0f;
+    for (float64 value : values) {
+        sum += value;
+    }
+    return sum / values.size();
+}

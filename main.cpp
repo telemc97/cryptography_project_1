@@ -80,23 +80,39 @@ void exercise2() {
                   "MRNBNUVNFGFHUAIIRRVKZAGVGSSJTVBBGZLIQROPGBLQOSRPWRRFGRVPNGUSJGYDFGVVKPSBXPHLPTU"
                   "VBXLOIATGPGBLQOSQGUEORHGWYIGUWACAHRESVKHNRNHRJDALGCQGAHVFWGZPNXGVVFNSPBIYVIEVZD"
                   "EGCEQNZVLALRVBBLOEEJCEVZTURFRAZCBAHVFBAYYMNKSITUHVJYIGNHVGUWURBGZPNTFRBFALBBYDM"
-                  "PTREWTZAAAQWGZPNXGVNLKIFFOGAZFNPHVGUIACFRKLNGQOLKPSNXSLVYIIVBTXVRPRWAYVOQFQVWUTVFHF";
+                  "PTREWTZAAAQWGZPNXGVNLKIFFOGAZFNPHVGUIACFRKLNGQOLKPSNXSLVYIIVBTXVRPRWAYVOQFQVWUT"
+                  "VFHF";
 
-    Crypto crypto(text);
-    int8 keyLenghtKasiski = crypto.findKeyLengthKasiski();
-    Logger::instance().log("Key has a length of %s", keyLenghtKasiski);
-    Vector(String) message_columns = crypto.splitEncryptedMessageToColumns(keyLenghtKasiski);
-    String key = crypto.findMostFrequentChars(message_columns);
-    String decrypted_message = crypto.decryptMessageWithKey(key);
-    Logger::instance().log("Decrypted message: %s", decrypted_message.c_str());
+    Crypto crypto = Crypto(text);
+    const uint32 min_word_length = 14;
+    const uint32 key_length_kasiski = crypto.findKeyLengthKasiski(min_word_length);
+    Logger::instance().log("Key Length according to Kasiski method is %i", key_length_kasiski);
+    const uint32 max_key_length = 20;
+    const uint32 key_length_friedman = crypto.findKeyLengthFriedman(max_key_length);
+    Logger::instance().log("Key Length according to Friedman test is %i", key_length_friedman);
+    const String key = crypto.getKeyWithFrequencyAnalysis(key_length_friedman);
+    Logger::instance().log("Key is: %s", key.c_str());
+    const String decrypted_text = crypto.decryptMessageWithKey(key);
+    Logger::instance().log("Decrypted text is: \n %s", decrypted_text.c_str());
+
 }
 
 int main() {
     std::setlocale(LC_ALL, "en_US.UTF-8");
 
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 1:");
+    Logger::instance().print_separator();
     exercise1();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
 
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 2:");
+    Logger::instance().print_separator();
     exercise2();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
 
     return 0;
 }
