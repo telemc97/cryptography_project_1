@@ -18,7 +18,7 @@ public:
      * @return A reference to the Logger instance.
      */
     static Logger& instance() {
-        static Logger logger;
+        static Logger logger(80);
         return logger;
     }
 
@@ -41,6 +41,12 @@ public:
      * @param lines_to_print The number of empty lines to print. Defaults to 1.
      */
     void print_empty_line(int8 lines_to_print = 1) const;
+
+    /**
+     * @brief Sets a new character limit for line breaking.
+     * @param limit The new character limit.
+     */
+    void setCharLimit(uint32 limit);
 
     /**
      * @brief Logs a formatted string message.
@@ -68,8 +74,18 @@ public:
 private:
     /**
      * @brief Private constructor for the singleton pattern.
+     * @param limit The character limit for line breaking.
      */
-    Logger();
+    Logger(uint32 limit = 80);
+
+    /**
+     * @brief Breaks a string into multiple lines at a specified character limit without breaking words.
+     * @param str The string to break.
+     * @return A vector of strings, where each string is a line.
+     */
+    Vector(String) break_line(const String& str) const;
+
+    uint32 char_limit;
 };
 
 #endif //CRYPTOGRAPHY1_LOGGER_H
