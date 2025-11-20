@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "Logger.h"
 #include <ostream>
+#include <ctime>
 
 #include "Crypto.h"
 
@@ -83,17 +84,31 @@ void exercise2() {
                   "PTREWTZAAAQWGZPNXGVNLKIFFOGAZFNPHVGUIACFRKLNGQOLKPSNXSLVYIIVBTXVRPRWAYVOQFQVWUT"
                   "VFHF";
 
-    Crypto crypto = Crypto(text);
-    const uint32 min_word_length = 14;
-    const uint32 key_length_kasiski = crypto.findKeyLengthKasiski(min_word_length);
+    constexpr uint32 min_word_length = 14;
+    const uint32 key_length_kasiski = Crypto::findKeyLengthKasiski(text, min_word_length);
     Logger::instance().log("Key Length according to Kasiski method is %i", key_length_kasiski);
-    const uint32 max_key_length = 20;
-    const uint32 key_length_friedman = crypto.findKeyLengthFriedman(max_key_length);
+    constexpr uint32 max_key_length = 20;
+    const uint32 key_length_friedman = Crypto::findKeyLengthFriedman(text, max_key_length);
     Logger::instance().log("Key Length according to Friedman test is %i", key_length_friedman);
-    const String key = crypto.getKeyWithFrequencyAnalysis(key_length_friedman);
+    const String key = Crypto::getKeyWithFrequencyAnalysis(text, key_length_friedman);
     Logger::instance().log("Key is: %s", key.c_str());
-    const String decrypted_text = crypto.decryptMessageWithKey(key);
+    const String decrypted_text = Crypto::decryptMessageWithKey(text, key);
     Logger::instance().log("Decrypted text is: \n %s", decrypted_text.c_str());
+}
+
+void exercise3() {
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+    uint16 original_message = static_cast<uint16>(std::rand() % 65536);
+
+    uint16 encrypted_message = Crypto::encrypt(original_message);
+    uint16 decrypted_message = Crypto::decrypt(encrypted_message);
+
+    if (original_message == decrypted_message) {
+        Logger::instance().log("[SUCCESS] The decoding formula is correct!");
+    } else {
+        Logger::instance().log("[FAILURE] The decoded message does not match the original.");
+    }
 
 }
 
@@ -111,6 +126,13 @@ int main() {
     Logger::instance().log("Exercise 2:");
     Logger::instance().print_separator();
     exercise2();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
+
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 3:");
+    Logger::instance().print_separator();
+    exercise3();
     Logger::instance().print_separator();
     Logger::instance().print_empty_line();
 

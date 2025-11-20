@@ -4,7 +4,10 @@
 #include "Types.h"
 
 /**
- * @brief Represents a recurring word found in the ciphertext.
+ * @struct WordOccurrences
+ * @brief Represents a recurring word found in a ciphertext.
+ * @details This struct is used to store a word and the number of times it appears in a text,
+ *          which is particularly useful in frequency analysis and the Kasiski examination.
  */
 struct WordOccurrences {
     uint32 count; ///< The number of times the word occurs.
@@ -12,102 +15,139 @@ struct WordOccurrences {
 };
 
 /**
- * @brief The `Crypto` class provides functionality for cryptographic analysis,
- *        including methods for analyzing ciphertext to determine key lengths
- *        and decrypt messages.
+ * @class Crypto
+ * @brief Provides a suite of static methods for cryptographic analysis and operations.
+ * @details This class includes tools for classical cipher analysis, such as the Kasiski examination
+ *          and Friedman test, as well as functions for encryption and decryption. All methods
+ *          are static, meaning they can be called directly without creating an instance of the class.
  */
 class Crypto {
 public:
     /**
-     * @brief Constructs a Crypto object with the given encrypted message.
-     * @param message The encrypted message to be analyzed.
-     */
-    Crypto(String message);
-
-    /**
-     * @brief Finds recurring words of a minimum length in the encrypted message.
-     *        Useful for Kasiski examination.
-     * @param minLength The minimum length of words to search for.
-     * @return A vector of `WordOccurrences` detailing the recurring words and their counts.
-     */
-    Vector(WordOccurrences) findRecurringWords(uint32 minLength);
-
-    /**
-     * @brief Calculates the distances between occurrences of a specific word in the message.
-     *        Used in Kasiski examination to find potential key lengths.
-     * @param word The word for which to find occurrence distances.
-     * @return A vector of distances between successive occurrences of the word.
-     */
-    Vector(uint32) findDistances(const String& word) const;
-
-    /**
-     * @brief Determines the most probable key length using the Kasiski examination method.
-     * @param min_word_length The minimum length of a word to be considered for the analysis.
+     * @brief Estimates the most probable key length of a polyalphabetic cipher using the Kasiski examination.
+     * @details This method identifies repeated sequences of characters in the ciphertext and calculates the
+     *          distances between them. The greatest common divisor (GCD) of these distances is likely
+     *          to be the key length.
+     * @param message The ciphertext to analyze.
+     * @param min_word_length The minimum length of a recurring word to be considered for the analysis.
      * @return The estimated key length. Returns 0 if no recurring words are found.
      */
-    uint32 findKeyLengthKasiski(const uint32 min_word_length);
+    static uint32 findKeyLengthKasiski(const String &message, uint32 min_word_length);
 
     /**
-     * @brief Splits the encrypted message into rows based on a given key length by transposing the columns.
-     *        This function first splits the message into columns and then flips the matrix
-     *        to reconstruct the original message blocks.
-     * @param keyLength The assumed length of the encryption key.
-     * @return A vector of strings, where each string is a reconstructed row (block) of the ciphertext.
+     * @brief Estimates the key length of a polyalphabetic cipher using the Friedman test (Index of Coincidence).
+     * @details The Friedman test measures the Index of Coincidence (IC) for various possible key lengths.
+     *          The IC for a monoalphabetic cipher is significantly higher than for a polyalphabetic cipher.
+     *          This method finds the key length that results in the highest average IC across all columns,
+     *          which is characteristic of a correctly guessed key length.
+     * @param message The ciphertext to analyze.
+     * @param max_key_length The maximum key length to test against.
+     * @return The estimated key length. Returns 1 if no optimal key length is found, as a fallback.
      */
-    Vector(String) splitEncryptedMessageReturnRows(uint32 keyLength) const;
+    static uint32 findKeyLengthFriedman(const String &message, uint32 max_key_length);
 
     /**
-     * @brief Splits the encrypted message into columns based on the given key length.
-     *        Each string in the returned vector represents a column of characters
-     *        that would have been encrypted with the same key character.
-     *        This is crucial for methods like the Friedman test.
-     * @param keyLength The assumed length of the encryption key.
-     * @return A vector of strings, where each string represents a column of the ciphertext.
-     */
-    Vector(String) splitEncryptedMessageReturnColumns(uint32 keyLength) const;
-
-    /**
-     * @brief Decrypts the encrypted message using a provided key.
-     * @param key The key used for decryption.
-     * @return The decrypted message.
-     */
-    String decryptMessageWithKey(String key);
-
-    /**
-     * @brief Estimates the key length using the Friedman test (Index of Coincidence method).
-     * @param max_key_length The maximum key length to test.
-     * @return The estimated key length. Returns 1 if no optimal key length is found.
-     */
-    uint32 findKeyLengthFriedman(uint32 max_key_length);
-
-    /**
-     * @brief Derives a potential key by performing frequency analysis on the columns of the ciphertext.
-     *        Assumes the most frequent character in each column corresponds to 'E' in the plaintext.
+     * @brief Derives a potential key for a Vigenère cipher through frequency analysis.
+     * @details This function assumes the underlying plaintext is English and that the most frequent character
+     *          in each column of the ciphertext (when arranged by key length) corresponds to 'E'.
+     *          By calculating the shift for each column, a probable key is derived.
+     * @param message The ciphertext to analyze.
      * @param key_length The length of the key to derive.
      * @return The derived key as a string.
      */
-    String getKeyWithFrequencyAnalysis(uint32 key_length);
+    static String getKeyWithFrequencyAnalysis(const String &message, uint32 key_length);
 
     /**
-     * @brief Finds the most frequent alphabetic character in a given string, ignoring case.
-     * @param text The string to analyze.
-     * @return The most frequent alphabetic character in the string. Returns a space (' ')
-     *         if the string contains no alphabetic characters.
+     * @brief Decrypts a Vigenère-encrypted message using a provided key.
+     * @details This method applies the Vigenère cipher decryption algorithm, subtracting the key character
+     *          value from the ciphertext character value (modulo 26) to recover the plaintext.
+     * @param message The ciphertext to decrypt.
+     * @param key The key to use for decryption.
+     * @return The decrypted message (plaintext).
      */
-    char findMostFrequentCharInString(const String& text) const;
+    static String decryptMessageWithKey(const String &message, String key);
+
+    /**
+     * @brief Decrypts a 16-bit message that was encrypted with a specific linear transformation.
+     * @details The decryption formula is the inverse of the encryption function. By analyzing the
+     *          linear feedback shift register (LFSR) properties of the encryption, the inverse
+     *          transformation is found to be \f$ m = c \oplus (c \ll 6) \oplus (c \ll 10) \oplus (c \ll 12) \f$.
+     * @param encrypted_msg The 16-bit ciphertext to decrypt.
+     * @return The recovered 16-bit plaintext.
+     */
+    static uint16 decrypt(uint16 encrypted_msg);
+
+    /**
+     * @brief Encrypts a 16-bit message using a specific linear transformation.
+     * @details The encryption is defined by the formula \f$ c = m \oplus (m \ll 6) \oplus (m \ll 10) \f$.
+     *          This is a form of linear feedback shift register (LFSR) encryption where the ciphertext
+     *          is a linear combination of the plaintext bits.
+     * @param decrypted_msg The original 16-bit plaintext to encrypt.
+     * @return The resulting 16-bit ciphertext.
+     */
+    static uint16 encrypt(uint16 decrypted_msg);
 
 private:
-    String message; ///< The encrypted message stored for analysis.
+    /**
+     * @brief Finds the most frequent alphabetic character in a string.
+     * @details This function is case-insensitive and is typically used in frequency analysis to guess
+     *          which character corresponds to the most common letter in a language (e.g., 'E' in English).
+     * @param text The string to analyze.
+     * @return The most frequent character. Returns a space (' ') if no alphabetic characters are found.
+     */
+    static char findMostFrequentCharInString(const String& text);
+
+    /**
+     * @brief Transposes a ciphertext matrix to align characters by key position.
+     * @details This method organizes the ciphertext into columns based on the key length and then
+     *          reconstructs them into rows. This is not a standard cryptographic operation but can
+     *          be useful for specific analytical approaches.
+     * @param message The ciphertext to process.
+     * @param keyLength The assumed length of the encryption key.
+     * @return A vector of strings, where each string is a reconstructed row.
+     */
+    static Vector(String) splitEncryptedMessageReturnRows(const String &message, uint32 keyLength);
+
+    /**
+     * @brief Splits a ciphertext into columns based on the key length.
+     * @details This is a crucial step for frequency analysis of polyalphabetic ciphers. Each column
+     *          contains characters that were encrypted with the same key character, forming a simple
+     *          monoalphabetic substitution cipher that can be broken individually.
+     * @param message The ciphertext to split.
+     * @param keyLength The assumed length of the encryption key.
+     * @return A vector of strings, where each string represents a column of the ciphertext.
+     */
+    static Vector(String) splitEncryptedMessageReturnColumns(const String &message, uint32 keyLength);
+
+    /**
+     * @brief Finds all recurring words of a specified minimum length in a text.
+     * @details This is the core of the Kasiski examination. The distances between these recurring
+     *          words can reveal the key length of a polyalphabetic cipher.
+     * @param message The text to search within.
+     * @param minLength The minimum length of words to search for.
+     * @return A vector of `WordOccurrences` structs, detailing each recurring word and its count.
+     */
+    static Vector(WordOccurrences) findRecurringWords(const String &message, uint32 minLength);
+
+    /**
+     * @brief Calculates the distances between all occurrences of a specific word.
+     * @details Used in the Kasiski examination, the GCD of these distances provides a strong
+     *          indicator of the key length.
+     * @param message The text to search within.
+     * @param word The word for which to find occurrence distances.
+     * @return A vector of distances between successive occurrences of the word.
+     */
+    static Vector(uint32) findDistances(const String &message, const String& word);
 
     /**
      * @brief Calculates the Index of Coincidence (IC) for a given text.
-     *        The IC is a measure of how likely it is that two randomly chosen letters
-     *        from the text will be the same. Used in cryptanalysis, particularly
-     *        for the Friedman test.
+     * @details The IC measures the probability that two randomly selected letters from a text are identical.
+     *          It is a powerful tool for distinguishing monoalphabetic from polyalphabetic ciphers and is
+     *          the foundation of the Friedman test for finding the key length.
      * @param text The text for which to calculate the IC.
-     * @return The calculated Index of Coincidence as a float32.
+     * @return The calculated Index of Coincidence as a float.
      */
-    float32 calculateIC(const String& text);
+    static float32 calculateIC(const String& text);
 };
 
 #endif //CRYPTOGRAPHY1_CRYPTO_H

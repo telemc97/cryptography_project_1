@@ -1,8 +1,7 @@
-//
-// Created by Tilemahos Mitroudas on 15/11/25.
-//
 
 #include "Utils.h"
+#include <string>
+#include <algorithm>
 
 int8 Utils::convertGreekCharToInt(wide_char character) {
     switch (character) {
@@ -80,4 +79,20 @@ char Utils::convertIntToEnglishChar(uint8 i) {
         return static_cast<char>('a' + i); // 0 becomes 'a', 1 becomes 'b', etc.
     }
     return ' '; // Return a space for out-of-range integers
+}
+
+
+Vector(uint8) Utils::getDigits(const uint64 number) {
+    if (number == 0) {
+        return {0};
+    }
+
+    Vector(uint8) digits;
+    uint64 num = number;
+    while (num > 0) {
+        digits.push_back(num % 10);
+        num /= 10;
+    }
+    std::reverse(digits.begin(), digits.end());
+    return digits;
 }
