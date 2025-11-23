@@ -36,26 +36,27 @@ public:
     static wide_char convertIntToGreekChar(int integer);
 
     /**
-     * @brief Converts an English character to its corresponding integer representation (0-25).
+     * @brief Converts a character to its corresponding integer representation based on a charset.
      *
-     * This function takes an English character and converts it to a zero-based integer.
-     * The conversion is case-insensitive. 'a' or 'A' becomes 0, 'b' or 'B' becomes 1, and so on.
+     * This function takes a character and converts it to a zero-based integer based on its position in the provided charset.
+     * The conversion is case-insensitive.
      *
-     * @param c The English character to convert.
-     * @return int8 The integer representation (0-25), or -1 if the character is not an English letter.
+     * @param c The character to convert.
+     * @param charset The character set to use for the conversion. Defaults to the English alphabet.
+     * @return int8 The integer representation, or -1 if the character is not in the charset.
      */
-    static int8 convertEnglishCharToInt(char c);
+    static int8 convertCharToInt(char c, const String& charset = "abcdefghijklmnopqrstuvwxyz");
 
     /**
-     * @brief Converts an integer (0-25) to its corresponding lowercase English character.
+     * @brief Converts an integer to its corresponding character based on a charset.
      *
-     * This function takes an integer and returns the corresponding lowercase English character.
-     * 'a' for 0, 'b' for 1, etc.
+     * This function takes an integer and returns the corresponding character from the charset.
      *
      * @param i The integer to convert.
-     * @return char The corresponding English character, or a space for out-of-range integers.
+     * @param charset The character set to use for the conversion. Defaults to the English alphabet.
+     * @return char The corresponding character, or a space for out-of-range integers.
      */
-    static char convertIntToEnglishChar(uint8 i);
+    static char convertIntToChar(uint8 i, const String& charset = "abcdefghijklmnopqrstuvwxyz");
 
     /**
      * @brief Returns the digits of an unsigned integer as a vector of unsigned integers.
@@ -66,8 +67,49 @@ public:
      * @param number The unsigned integer to process.
      * @return Vector(uint8) A vector of the digits of the number.
      */
-    static Vector(uint8) getDigits(uint64 number);
+    static Vector(uint8) getDigits(const uint32 &number);
 
+    /**
+     * @brief Transposes a vector of strings.
+     *
+     * This function takes a vector of strings and transposes it. The first character of every string
+     * of the vector will comprise the first string of the transposed vector.
+     *
+     * @param string_vector The vector of strings to transpose.
+     * @return Vector(String) The transposed vector of strings.
+     */
+    static Vector(String) transposeVectorString(const Vector(String)& string_vector);
+
+    /**
+     * @brief Flattens a vector of strings into a single string.
+     *
+     * This function takes a vector of strings and concatenates them into a single string.
+     *
+     * @param string_vector The vector of strings to flatten.
+     * @return String The flattened string.
+     */
+    static String flatten(const Vector(String)& string_vector);
+
+    /**
+     * @brief Converts a string to its string representation of bits.
+     *
+     * This function takes a string and returns a string representing its bits.
+     *
+     * @param value The string to convert.
+     * @return String A string representing the bits of the data.
+     */
+    static String toBitString(const String& value);
+
+    /**
+     * @brief Converts an integer to a vector of its bits.
+     *
+     * This function takes an integer and returns a vector of uint8_t, where each
+     * element is a bit (0 or 1). The bits are ordered from most significant to least significant.
+     *
+     * @param value The integer to convert.
+     * @return Vector(uint8) A vector representing the bits of the integer.
+     */
+    static Vector(int32) intToBits(int32 value);
 };
 
 

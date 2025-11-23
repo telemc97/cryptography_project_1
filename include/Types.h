@@ -29,6 +29,7 @@
 #define boolean  unsigned char
 
 #define wide_char wchar_t
+#define data_size      size_t
 
 // Macros for std::array and std::string
 #define Array(type, size)         std::array<type, size>

@@ -1,5 +1,6 @@
 #include "Crypto.h"
 #include <iostream>
+#include <random>
 #include <algorithm>
 #include "Math.h"
 #include "Utils.h"
@@ -72,28 +73,7 @@ Vector(String) Crypto::splitEncryptedMessageReturnRows(const String &message, ui
     }
 
     Vector(String) columns = splitEncryptedMessageReturnColumns(message, keyLength);
-    if (columns.empty()) {
-        return {};
-    }
-
-    // Determine the number of rows, which is the length of the longest column
-    size_t num_rows = 0;
-    for (const auto& col : columns) {
-        if (col.length() > num_rows) {
-            num_rows = col.length();
-        }
-    }
-
-    Vector(String) rows(num_rows);
-    for (size_t i = 0; i < num_rows; ++i) {
-        for (size_t j = 0; j < keyLength; ++j) {
-            if (i < columns[j].length()) {
-                rows[i] += columns[j][i];
-            }
-        }
-    }
-
-    return rows;
+    return Utils::transposeVectorString(columns);
 }
 
 Vector(String) Crypto::splitEncryptedMessageReturnColumns(const String &message, const uint32 keyLength) {
@@ -138,19 +118,23 @@ char Crypto::findMostFrequentCharInString(const String& text) {
     return mostFrequent;
 }
 
-String Crypto::decryptMessageWithKey(const String &message, const String key) {
+String Crypto::vigenereDecipher(const String &message, const String key) {
     String decrypted_message;
-    Vector(String) splitted_message = splitEncryptedMessageReturnRows(message, key.length());
-    // Iterate over message columns
-    for (auto &message_rows : splitted_message) {
-        // Iterate over String characters
-        for (int i = 0; i < message_rows.length(); i++) {
-            const int8 encrypted_char = Utils::convertEnglishCharToInt(message_rows[i]);
-            const int8 key_char = Utils::convertEnglishCharToInt(key[i]);
-            const char decrypted_char = Utils::convertIntToEnglishChar(Math::mod26(encrypted_char-key_char));
-            decrypted_message+=decrypted_char;
+    decrypted_message.reserve(message.length());
+
+    for (size_t i = 0; i < message.length(); ++i) {
+        const int8 encrypted_char = Utils::convertCharToInt(message[i]);
+        const int8 key_char = Utils::convertCharToInt(key[i % key.length()]);
+
+        if (encrypted_char != -1) { // Check if the character is a letter
+            const char decrypted_char = Utils::convertIntToChar(Math::mod26(encrypted_char - key_char));
+            decrypted_message += decrypted_char;
+        } else {
+            // If the character is not a letter, append it as is.
+            decrypted_message += message[i];
         }
     }
+
     return decrypted_message;
 }
 
@@ -188,24 +172,24 @@ float32 Crypto::calculateIC(const String& text) {
 
 uint32 Crypto::findKeyLengthFriedman(const String &message, const uint32 max_key_length) {
     uint32  best_key_length = 0;
-    float64 english_ic = 0.067;
+    const float64 english_ic = 0.067;
     float64 min_ic_difference = 1.0;
 
     for (uint32 key_length = 2; key_length < max_key_length; key_length++) {
 
-        Vector(String) splitted_message_collums = splitEncryptedMessageReturnColumns(message, key_length);
+        Vector(String) splitted_message_columns = splitEncryptedMessageReturnColumns(message, key_length);
 
         Vector(float64) coincidence_indices;
-        for (const String& column : splitted_message_collums) {
+        for (const String& column : splitted_message_columns) {
             coincidence_indices.push_back(calculateIC(column));
         }
 
         if (!coincidence_indices.empty()) {
             float64 average_ic = Math::average(coincidence_indices);
-            float64 ic_differrence = std::abs(average_ic - english_ic);
+            float64 ic_difference = std::abs(average_ic - english_ic);
 
-            if (ic_differrence < min_ic_difference) {
-                min_ic_difference = ic_differrence;
+            if (ic_difference < min_ic_difference) {
+                min_ic_difference = ic_difference;
                 best_key_length = key_length;
             }
         }
@@ -219,21 +203,82 @@ uint32 Crypto::findKeyLengthFriedman(const String &message, const uint32 max_key
 }
 
 String Crypto::getKeyWithFrequencyAnalysis(const String &message, uint32 key_length) {
-    Vector(String) text_collums = splitEncryptedMessageReturnColumns(message, key_length);
+    if (key_length == 0) {
+        return "";
+    }
+    const Vector(String) text_columns = splitEncryptedMessageReturnColumns(message, key_length);
     String key;
-    for (auto &text_collum : text_collums) {
-        key+=findMostFrequentCharInString(text_collum);
+    key.reserve(key_length);
+    for (const auto &column : text_columns) {
+        char char_to_append;
+        if (column.empty()) {
+            char_to_append = '?';
+        } else {
+            const char most_frequent_english_char = 'E';
+            const char most_frequent_in_column = findMostFrequentCharInString(column);
+            if (most_frequent_in_column == ' ') {
+                // No alphabetic characters in the column
+                char_to_append = '?';
+            } else {
+                // Calculate the shift
+                const int8 shift = Utils::convertCharToInt(most_frequent_in_column) - Utils::convertCharToInt(most_frequent_english_char);
+                char_to_append = Utils::convertIntToChar(Math::mod26(shift));
+            }
+        }
+        key += char_to_append;
     }
     return key;
 }
 
-uint16 Crypto::decrypt(const uint16 encrypted_msg) {
+uint16 Crypto::decrypt16bit(const uint16 encrypted_msg) {
     // m = c ^ (c << 6) ^ (c << 10) ^ (c << 12)
     return encrypted_msg ^ (static_cast<uint16>(encrypted_msg << 6))
                          ^ (static_cast<uint16>(encrypted_msg << 10))
                          ^ (static_cast<uint16>(encrypted_msg << 12));
 }
 
-uint16 Crypto::encrypt(const uint16 decrypted_msg) {
+uint16 Crypto::encrypt16bit(const uint16 decrypted_msg) {
     return decrypted_msg ^ (static_cast<uint16>(decrypted_msg << 6)) ^ (static_cast<uint16>(decrypted_msg << 10));
+}
+
+String Crypto::generateOTPKey(data_size length, const String &charset) {
+    String key;
+    key.reserve(length);
+    // Setup random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, charset.length() - 1);
+
+    for (data_size i = 0; i < length; ++i) {
+        int random_index = distrib(gen);
+        key += charset[random_index];
+    }
+    return key;
+}
+
+String Crypto::encrypt(const String &plaintext, const String &key) {
+    if (plaintext.length() != key.length()) {
+        throw std::length_error("Key length must match message length.");
+    }
+    String ciphertext;
+    ciphertext.reserve(plaintext.length());
+
+    for (size_t i = 0; i < plaintext.length(); ++i) {
+        ciphertext += plaintext[i] ^ key[i];
+    }
+
+    return ciphertext;
+}
+
+String Crypto::decrypt(const String &ciphertext, const String &key) {
+    if (ciphertext.length() != key.length()) {
+        throw std::length_error("Key length must match ciphertext length.");
+    }
+    String plaintext;
+    plaintext.reserve(ciphertext.length());
+    for (size_t i = 0; i < ciphertext.length(); ++i) {
+        plaintext += ciphertext[i] ^ key[i];
+    }
+
+    return plaintext;
 }

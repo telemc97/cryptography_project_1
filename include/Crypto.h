@@ -65,7 +65,7 @@ public:
      * @param key The key to use for decryption.
      * @return The decrypted message (plaintext).
      */
-    static String decryptMessageWithKey(const String &message, String key);
+    static String vigenereDecipher(const String &message, String key);
 
     /**
      * @brief Decrypts a 16-bit message that was encrypted with a specific linear transformation.
@@ -75,7 +75,7 @@ public:
      * @param encrypted_msg The 16-bit ciphertext to decrypt.
      * @return The recovered 16-bit plaintext.
      */
-    static uint16 decrypt(uint16 encrypted_msg);
+    static uint16 decrypt16bit(uint16 encrypted_msg);
 
     /**
      * @brief Encrypts a 16-bit message using a specific linear transformation.
@@ -85,7 +85,39 @@ public:
      * @param decrypted_msg The original 16-bit plaintext to encrypt.
      * @return The resulting 16-bit ciphertext.
      */
-    static uint16 encrypt(uint16 decrypted_msg);
+    static uint16 encrypt16bit(uint16 decrypted_msg);
+
+    /**
+     * @brief Generates a random key of the same length as the message.
+     * * @details
+     * According to Shannon's Perfect Secrecy theorem (Theorem 2.9.1),
+     * the key must be chosen uniformly at random and be as long as the message.
+     * * @param length The number of 5-bit blocks (characters) needed.
+     * @return std::vector<int> A vector of random integers (0-31).
+     */
+    static String generateOTPKey(data_size length, const String &charset);
+
+    /**
+     * @brief Encrypts a plaintext message using a string key.
+     * * @details
+     * Converts both plaintext and key characters to their 5-bit integer values
+     * and performs bitwise XOR. Formula: \f$ c = m \oplus k \f$.
+     * @param plaintext The message to encrypt.
+     * @param key The random key string (must be same length as plaintext).
+     * @return std::vector<int> The encrypted ciphertext as a vector of integers.
+     */
+    static String encrypt(const String &plaintext, const String &key);
+
+    /**
+     * @brief Decrypts a ciphertext using the string key.
+     * * @details
+     * Performs the inverse operation (XOR).
+     * Formula: \f$ m = c \oplus k \f$.
+     * * @param ciphertext The vector of encrypted integers.
+     * @param key The key string used for encryption.
+     * @return std::string The recovered plaintext string.
+     */
+    static String decrypt(const String &ciphertext, const String &key);
 
 private:
     /**

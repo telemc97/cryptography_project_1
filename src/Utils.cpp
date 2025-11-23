@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include <string>
 #include <algorithm>
+#include <cctype>
 
 int8 Utils::convertGreekCharToInt(wide_char character) {
     switch (character) {
@@ -63,36 +64,82 @@ wide_char Utils::convertIntToGreekChar(int integer) {
     }
 }
 
-#include <cctype> // For std::tolower and std::isalpha
-
-int8 Utils::convertEnglishCharToInt(char c) {
-    c = static_cast<char>(std::tolower(c)); // Convert to lowercase
-
-    if (c >= 'a' && c <= 'z') {
-        return c - 'a'; // 'a' becomes 0, 'b' becomes 1, etc.
+int8 Utils::convertCharToInt(char c, const String& charset) {
+    c = static_cast<char>(std::tolower(c));
+    size_t pos = charset.find(c);
+    if (pos != String::npos) {
+        return static_cast<int8>(pos);
     }
     return -1;
 }
 
-char Utils::convertIntToEnglishChar(uint8 i) {
-    if (i >= 0 && i < 26) {
-        return static_cast<char>('a' + i); // 0 becomes 'a', 1 becomes 'b', etc.
+char Utils::convertIntToChar(uint8 i, const String& charset) {
+    if (i < charset.length()) {
+        return charset[i];
     }
-    return ' '; // Return a space for out-of-range integers
+    return ' ';
 }
 
 
-Vector(uint8) Utils::getDigits(const uint64 number) {
+Vector(uint8) Utils::getDigits(const uint32 &number) {
     if (number == 0) {
         return {0};
     }
 
     Vector(uint8) digits;
-    uint64 num = number;
+    uint32 num = number;
     while (num > 0) {
         digits.push_back(num % 10);
         num /= 10;
     }
     std::reverse(digits.begin(), digits.end());
     return digits;
+}
+
+Vector(String) Utils::transposeVectorString(const Vector(String)& string_vector) {
+    if (string_vector.empty()) {
+        return {};
+    }
+
+    Vector(String) transposed_vector(string_vector[0].length());
+    for (size_t i = 0; i < string_vector.size(); ++i) {
+        for (size_t j = 0; j < string_vector[i].length(); ++j) {
+            transposed_vector[j] += string_vector[i][j];
+        }
+    }
+
+    return transposed_vector;
+}
+
+#include <bitset>
+
+String Utils::flatten(const Vector(String)& string_vector) {
+    String flattened_string;
+    for (const auto& s : string_vector) {
+        flattened_string += s;
+    }
+    return flattened_string;
+}
+
+String Utils::toBitString(const String& value) {
+    String bit_string;
+    bit_string.reserve(value.length() * 8);
+    for (char c : value) {
+        bit_string += std::bitset<8>(c).to_string();
+    }
+    return bit_string;
+}
+
+Vector(int32) Utils::intToBits(int32 value) {
+    const int32 num_bits = sizeof(int32) * 8;
+    std::bitset<num_bits> bits(value);
+
+    Vector(int32) bit_vector;
+    bit_vector.reserve(num_bits);
+
+    for (int i = num_bits - 1; i >= 0; --i) {
+        bit_vector.push_back(bits[i]);
+    }
+    
+    return bit_vector;
 }

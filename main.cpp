@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include "Polynomial.h"
@@ -5,7 +6,7 @@
 #include "Logger.h"
 #include <ostream>
 #include <ctime>
-
+#include <math.h>
 #include "Crypto.h"
 
 void exercise1() {
@@ -84,15 +85,12 @@ void exercise2() {
                   "PTREWTZAAAQWGZPNXGVNLKIFFOGAZFNPHVGUIACFRKLNGQOLKPSNXSLVYIIVBTXVRPRWAYVOQFQVWUT"
                   "VFHF";
 
-    constexpr uint32 min_word_length = 14;
-    const uint32 key_length_kasiski = Crypto::findKeyLengthKasiski(text, min_word_length);
-    Logger::instance().log("Key Length according to Kasiski method is %i", key_length_kasiski);
     constexpr uint32 max_key_length = 20;
     const uint32 key_length_friedman = Crypto::findKeyLengthFriedman(text, max_key_length);
     Logger::instance().log("Key Length according to Friedman test is %i", key_length_friedman);
     const String key = Crypto::getKeyWithFrequencyAnalysis(text, key_length_friedman);
     Logger::instance().log("Key is: %s", key.c_str());
-    const String decrypted_text = Crypto::decryptMessageWithKey(text, key);
+    const String decrypted_text = Crypto::vigenereDecipher(text, key);
     Logger::instance().log("Decrypted text is: \n %s", decrypted_text.c_str());
 }
 
@@ -101,15 +99,57 @@ void exercise3() {
 
     uint16 original_message = static_cast<uint16>(std::rand() % 65536);
 
-    uint16 encrypted_message = Crypto::encrypt(original_message);
-    uint16 decrypted_message = Crypto::decrypt(encrypted_message);
+    uint16 encrypted_message = Crypto::encrypt16bit(original_message);
+    uint16 decrypted_message = Crypto::decrypt16bit(encrypted_message);
 
     if (original_message == decrypted_message) {
         Logger::instance().log("[SUCCESS] The decoding formula is correct!");
     } else {
         Logger::instance().log("[FAILURE] The decoded message does not match the original.");
     }
+}
 
+void exercise5() {
+    String charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.!?()-";
+
+    const String message = "HELLO-WORLD";
+    Logger::instance().log("Original message is: %s", message.c_str());
+    Logger::instance().log("Original message's representation in bits is: %s", Utils::toBitString(message).c_str());
+    const String key = Crypto::generateOTPKey(message.size(), charset);
+    Logger::instance().log("Key is: %s", key.c_str());
+    Logger::instance().log("Key representation in bits is: %s", Utils::toBitString(key).c_str());
+    const String encrypted_message = Crypto::encrypt(message, key);
+    Logger::instance().log("Encrypted message is: %s", encrypted_message.c_str());
+    Logger::instance().log("Encrypted message's representation in bits is: %s", Utils::toBitString(encrypted_message).c_str());
+    const String decrypted_message = Crypto::decrypt(encrypted_message, key);
+    Logger::instance().log("Decrypted message is: %s", decrypted_message.c_str());
+    Logger::instance().log("Decrypted message's representation in bits is: %s", Utils::toBitString(decrypted_message).c_str());
+    if (message == decrypted_message) {
+        Logger::instance().log("[SUCCESS] Decryption is correct");
+    } else {
+        Logger::instance().log("[FAILURE] The Decryption failed.");
+    }
+}
+
+void exercise6() {
+    uint8 count = 0;
+    constexpr uint8 degree = 5;
+
+    Logger::instance().log("Primitive polynomials:");
+    // 111111 = 63
+    uint8 max_coefficient = 63;
+    // 100000 = 32
+    uint8 min_coefficient = 32;
+    for (uint8 i = min_coefficient; i < max_coefficient + 1; i++) {
+        Vector(int32) coefficients = Utils::intToBits(i);
+        Polynomial gf2_polynomial = Polynomial(degree, coefficients);
+        if (gf2_polynomial.gf2IsPrimitive()) {
+            Logger::instance().log(gf2_polynomial.toString());
+            count++;
+        }
+    }
+
+    Logger::instance().log("Found %i Primitive polynomials", count);
 }
 
 int main() {
@@ -136,5 +176,18 @@ int main() {
     Logger::instance().print_separator();
     Logger::instance().print_empty_line();
 
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 5:");
+    Logger::instance().print_separator();
+    exercise5();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
+
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 6:");
+    Logger::instance().print_separator();
+    exercise6();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
     return 0;
 }

@@ -18,9 +18,9 @@ public:
     /**
      * @brief Constructs a new Polynomial object.
      * @param deg The degree of the polynomial.
-     * @param coeffs A vector of float64 coefficients, from highest degree to lowest.
+     * @param coeffs A vector of int32 coefficients, from highest degree to lowest.
      */
-    Polynomial(uint32 deg, const Vector(float64)& coeffs);
+    Polynomial(uint32 deg, const Vector(int32)& coeffs);
 
     /**
      * @brief Overloads the addition operator for polynomials.
@@ -67,7 +67,7 @@ public:
      * @brief Gets the coefficients of the polynomial.
      * @return A const reference to the vector of coefficients.
      */
-    const Vector(float64)& getCoefficients() const;
+    const Vector(int32)& getCoefficients() const;
 
     /**
      * @brief Converts the polynomial to a string representation.
@@ -81,9 +81,61 @@ public:
      */
     bool isZero() const;
 
+    /**
+     * @brief Performs polynomial addition over GF(2).
+     * @param a The first polynomial.
+     * @param b The second polynomial.
+     * @return The sum of the two polynomials over GF(2).
+     */
+    static Polynomial gf2Add(const Polynomial& a, const Polynomial& b);
+
+    /**
+     * @brief Performs polynomial multiplication over GF(2).
+     * @param a The first polynomial.
+     * @param b The second polynomial.
+     * @return The product of the two polynomials over GF(2).
+     */
+    static Polynomial gf2Multiply(const Polynomial& a, const Polynomial& b);
+
+    /**
+     * @brief Performs polynomial modulo over GF(2).
+     * @param a The dividend polynomial.
+     * @param b The divisor polynomial.
+     * @return The remainder of the polynomial division over GF(2).
+     */
+    static Polynomial gf2Mod(const Polynomial& a, const Polynomial& b);
+
+    /**
+     * @brief Checks if the polynomial is irreducible over GF(2).
+     * @return True if the polynomial is irreducible, false otherwise.
+     */
+    boolean gf2IsIrreducible() const;
+
+    /**
+     * @brief Checks if the polynomial is primitive over GF(2).
+     * @return True if the polynomial is primitive, false otherwise.
+     */
+    boolean gf2IsPrimitive() const;
+
 private:
     /**
+     * @brief Checks if the polynomial's coefficients are valid for GF(2) (i.e., only 0 or 1).
+     * @return True if the polynomial is a valid GF(2) polynomial, false otherwise.
+     */
+    bool gf2IsValid() const;
+
+    /**
+     * @brief Performs modular exponentiation for polynomials over GF(2).
+     * @param base The base polynomial.
+     * @param exp The exponent.
+     * @param mod The modulus polynomial.
+     * @return The result of (base^exp) mod mod over GF(2).
+     */
+    static Polynomial gf2Power(const Polynomial& base, uint32 exp, const Polynomial& mod);
+
+    /**
      * @brief The degree of the polynomial.
+     * TODO: The degree can be omitted and determined by the coefficients.
      */
     uint32 degree;
     /**
@@ -91,7 +143,7 @@ private:
      *
      * coefficients[i] represents the coefficient of x^i.
      */
-    std::vector<float64> coefficients;
+    Vector(int32) coefficients;
 };
 
 #endif //CRYPTOGRAPHY1_POLYNOMIAL_H
