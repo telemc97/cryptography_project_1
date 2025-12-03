@@ -1,12 +1,10 @@
 #include <cmath>
 #include <iostream>
-
 #include "Polynomial.h"
 #include "Utils.h"
 #include "Logger.h"
 #include <ostream>
 #include <ctime>
-#include <math.h>
 #include "Crypto.h"
 
 void exercise1() {
@@ -140,7 +138,7 @@ void exercise6() {
     uint8 max_coefficient = 63;
     // 100000 = 32
     uint8 min_coefficient = 32;
-    for (uint8 i = min_coefficient; i < max_coefficient + 1; i++) {
+    for (int32 i = min_coefficient; i < max_coefficient + 1; i++) {
         Vector(int32) coefficients = Utils::intToBits(i);
         Polynomial gf2_polynomial = Polynomial(degree, coefficients);
         if (gf2_polynomial.gf2IsPrimitive()) {
@@ -148,8 +146,43 @@ void exercise6() {
             count++;
         }
     }
-
     Logger::instance().log("Found %i Primitive polynomials", count);
+}
+
+void exercise9() {
+    constexpr uint32 iterations = 10;
+    const String charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+    // Exercise asks for 2 X 128 bit  = 32byte
+    constexpr data_size length = 32;
+    constexpr uint32 totalbits = length * 8;
+    const String key = Utils::generateRandomString(16, charset);
+    const String iv = Utils::generateRandomString(16, charset);
+    int32 dif_ecb = 0;
+    int32 dif_cbc = 0;
+    for (int32 i = 0; i < iterations; i++) {
+        // Generating a random message using generateOTP function.
+        String msg1 = Utils::generateRandomString(length, charset);
+        String msg2 = msg1;
+        msg2[0] ^= 1;
+
+        String cipher1 = Crypto::encryptECB(key, msg1);
+        String cipher2 = Crypto::encryptECB(key, msg2);
+        dif_ecb += Crypto::countDiffBits(cipher1, cipher2);
+
+        cipher1 = Crypto::encryptCBC(key, iv, msg1);
+        cipher2 = Crypto::encryptCBC(key, iv, msg2);
+        dif_cbc += Crypto::countDiffBits(cipher1, cipher2);
+
+    }
+
+    float32 avg_ecb = static_cast<float32>(dif_ecb) / iterations;
+    float32 ecb_pct = avg_ecb/totalbits * 100.0;
+
+    float32 avg_cbc = static_cast<float32>(dif_cbc) / iterations;
+    float32 cbc_pct = avg_cbc/totalbits * 100.0;
+
+    Logger::instance().log("ECB avg diff bits: %d, Percentage: %d", avg_ecb, ecb_pct);
+    Logger::instance().log("CBC avg diff bits: %d, Percentage: %d", avg_cbc, cbc_pct);
 }
 
 int main() {
@@ -189,5 +222,13 @@ int main() {
     exercise6();
     Logger::instance().print_separator();
     Logger::instance().print_empty_line();
+
+    Logger::instance().print_separator();
+    Logger::instance().log("Exercise 9:");
+    Logger::instance().print_separator();
+    exercise6();
+    Logger::instance().print_separator();
+    Logger::instance().print_empty_line();
+
     return 0;
 }

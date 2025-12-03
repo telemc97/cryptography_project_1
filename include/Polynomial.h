@@ -109,21 +109,15 @@ public:
      * @brief Checks if the polynomial is irreducible over GF(2).
      * @return True if the polynomial is irreducible, false otherwise.
      */
-    boolean gf2IsIrreducible() const;
+    bool gf2IsIrreducible() const;
 
     /**
      * @brief Checks if the polynomial is primitive over GF(2).
      * @return True if the polynomial is primitive, false otherwise.
      */
-    boolean gf2IsPrimitive() const;
+    bool gf2IsPrimitive() const;
 
 private:
-    /**
-     * @brief Checks if the polynomial's coefficients are valid for GF(2) (i.e., only 0 or 1).
-     * @return True if the polynomial is a valid GF(2) polynomial, false otherwise.
-     */
-    bool gf2IsValid() const;
-
     /**
      * @brief Performs modular exponentiation for polynomials over GF(2).
      * @param base The base polynomial.

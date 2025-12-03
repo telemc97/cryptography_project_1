@@ -5,6 +5,10 @@
 #include "Math.h"
 #include "Utils.h"
 
+#include <openssl/aes.h>
+#include <openssl/rand.h>
+#include <openssl/evp.h>
+
 Vector(WordOccurrences) Crypto::findRecurringWords(const String &message, const uint32 minLength) {
     if (message.length() < minLength || minLength == 0) {
         return {};
@@ -281,4 +285,100 @@ String Crypto::decrypt(const String &ciphertext, const String &key) {
     }
 
     return plaintext;
+}
+
+int32 Crypto::countDiffBits(const String& data1, const String& data2) {
+    if (data1.length() != data2.length()) {
+        throw std::length_error("Input strings must have the same length.");
+    }
+
+    int32 diff_bits = 0;
+    for (size_t i = 0; i < data1.length(); ++i) {
+        // XOR the bytes. The '1's in the result are the differing bits.
+        unsigned char xor_val = data1[i] ^ data2[i];
+
+        // Count the '1's in the byte (using a simple loop or Kernighan's algorithm)
+        while (xor_val > 0) {
+            xor_val &= (xor_val - 1);
+            diff_bits++;
+        }
+    }
+    return diff_bits;
+}
+
+String Crypto::encryptECB(const String& key, const String& plaintext) {
+    if (key.length() != 16) {
+        throw std::length_error("Key must be 16 bytes for AES-128.");
+    }
+
+    EVP_CIPHER_CTX *ctx;
+    int len;
+    int ciphertext_len;
+
+    // Create and initialise the context
+    if(!(ctx = EVP_CIPHER_CTX_new()))
+        throw std::runtime_error("Failed to create new EVP_CIPHER_CTX");
+
+    // Initialise the encryption operation.
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, reinterpret_cast<const unsigned char*>(key.c_str()), NULL))
+        throw std::runtime_error("Failed to initialize encryption");
+
+    String ciphertext;
+    ciphertext.resize(plaintext.length() + AES_BLOCK_SIZE); // Make room for padding
+
+    // Provide the message to be encrypted, and obtain the encrypted output.
+    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]), &len, reinterpret_cast<const unsigned char*>(plaintext.c_str()), plaintext.length()))
+        throw std::runtime_error("Failed to update encryption");
+    ciphertext_len = len;
+
+    // Finalise the encryption.
+    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]) + len, &len))
+        throw std::runtime_error("Failed to finalize encryption");
+    ciphertext_len += len;
+
+    // Clean up
+    EVP_CIPHER_CTX_free(ctx);
+
+    ciphertext.resize(ciphertext_len);
+    return ciphertext;
+}
+
+String Crypto::encryptCBC(const String& key, const String& iv, const String& plaintext) {
+    if (key.length() != 16) {
+        throw std::length_error("Key must be 16 bytes for AES-128.");
+    }
+    if (iv.length() != 16) {
+        throw std::length_error("IV must be 16 bytes for AES-128.");
+    }
+
+    EVP_CIPHER_CTX *ctx;
+    int len;
+    int ciphertext_len;
+
+    // Create and initialise the context
+    if(!(ctx = EVP_CIPHER_CTX_new()))
+        throw std::runtime_error("Failed to create new EVP_CIPHER_CTX");
+
+    // Initialise the encryption operation.
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, reinterpret_cast<const unsigned char*>(key.c_str()), reinterpret_cast<const unsigned char*>(iv.c_str())))
+        throw std::runtime_error("Failed to initialize encryption");
+
+    String ciphertext;
+    ciphertext.resize(plaintext.length() + AES_BLOCK_SIZE); // Make room for padding
+
+    // Provide the message to be encrypted, and obtain the encrypted output.
+    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]), &len, reinterpret_cast<const unsigned char*>(plaintext.c_str()), plaintext.length()))
+        throw std::runtime_error("Failed to update encryption");
+    ciphertext_len = len;
+
+    // Finalise the encryption.
+    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]) + len, &len))
+        throw std::runtime_error("Failed to finalize encryption");
+    ciphertext_len += len;
+
+    // Clean up
+    EVP_CIPHER_CTX_free(ctx);
+
+    ciphertext.resize(ciphertext_len);
+    return ciphertext;
 }

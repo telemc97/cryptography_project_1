@@ -175,8 +175,6 @@ String Polynomial::toString() const {
     return result;
 }
 
-#include <stdexcept>
-
 bool Polynomial::isZero() const {
     for (int32 coeff : coefficients) {
         if (coeff != 0) {
@@ -186,19 +184,7 @@ bool Polynomial::isZero() const {
     return true;
 }
 
-bool Polynomial::gf2IsValid() const {
-    for (int32 coeff : coefficients) {
-        if (coeff != 0 && coeff != 1) {
-            return false;
-        }
-    }
-    return true;
-}
-
 Polynomial Polynomial::gf2Add(const Polynomial& a, const Polynomial& b) {
-    if (!a.gf2IsValid() || !b.gf2IsValid()) {
-        throw std::invalid_argument("Input polynomials must be GF(2) polynomials.");
-    }
     uint32 max_degree = std::max(a.degree, b.degree);
     Vector(int32) result_coeffs(max_degree + 1, 0);
 
@@ -221,9 +207,6 @@ Polynomial Polynomial::gf2Add(const Polynomial& a, const Polynomial& b) {
 }
 
 Polynomial Polynomial::gf2Multiply(const Polynomial& a, const Polynomial& b) {
-    if (!a.gf2IsValid() || !b.gf2IsValid()) {
-        throw std::invalid_argument("Input polynomials must be GF(2) polynomials.");
-    }
     uint32 new_degree = a.degree + b.degree;
     Vector(int32) result_coeffs(new_degree + 1, 0);
 
@@ -243,9 +226,6 @@ Polynomial Polynomial::gf2Multiply(const Polynomial& a, const Polynomial& b) {
 }
 
 Polynomial Polynomial::gf2Mod(const Polynomial& a, const Polynomial& b) {
-    if (!a.gf2IsValid() || !b.gf2IsValid()) {
-        throw std::invalid_argument("Input polynomials must be GF(2) polynomials.");
-    }
     if (b.isZero()) {
         throw std::invalid_argument("Division by zero polynomial");
     }
@@ -265,7 +245,7 @@ Polynomial Polynomial::gf2Mod(const Polynomial& a, const Polynomial& b) {
     return remainder;
 }
 
-boolean Polynomial::gf2IsIrreducible() const {
+bool Polynomial::gf2IsIrreducible() const {
     if (degree == 0) return false;
     if (coefficients[0] == 0) return false; // Must not be divisible by x
 
@@ -295,7 +275,7 @@ boolean Polynomial::gf2IsIrreducible() const {
     return true;
 }
 
-boolean Polynomial::gf2IsPrimitive() const {
+bool Polynomial::gf2IsPrimitive() const {
     if (!gf2IsIrreducible()) {
         return false;
     }

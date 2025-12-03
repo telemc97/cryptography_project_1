@@ -31,7 +31,7 @@
 #define wide_char wchar_t
 #define data_size      size_t
 
-// Macros for std::array and std::string
+// Macros for standard types
 #define Array(type, size)         std::array<type, size>
 #define Vector(type)              std::vector<type>
 #define String                    std::string

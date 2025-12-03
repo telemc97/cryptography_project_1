@@ -109,7 +109,15 @@ public:
      * @param value The integer to convert.
      * @return Vector(uint8) A vector representing the bits of the integer.
      */
-    static Vector(int32) intToBits(int32 value);
+    static Vector(int32) intToBits(const int32 &value);
+
+    /**
+     * @brief Generates a random string from a given character set.
+     * @param length The desired length of the string.
+     * @param charset The set of characters to choose from.
+     * @return A string containing random characters from the charset.
+     */
+    static String generateRandomString(data_size length, const String& charset);
 };
 
 

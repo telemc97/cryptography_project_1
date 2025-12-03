@@ -1,4 +1,3 @@
-
 #include "Utils.h"
 #include <string>
 #include <algorithm>
@@ -130,16 +129,42 @@ String Utils::toBitString(const String& value) {
     return bit_string;
 }
 
-Vector(int32) Utils::intToBits(int32 value) {
+#include <cstddef>
+#include <openssl/rand.h>
+#include <stdexcept>
+
+Vector(int32) Utils::intToBits(const int32 &value) {
     const int32 num_bits = sizeof(int32) * 8;
     std::bitset<num_bits> bits(value);
 
     Vector(int32) bit_vector;
     bit_vector.reserve(num_bits);
 
-    for (int i = num_bits - 1; i >= 0; --i) {
+    for (int32 i = num_bits - 1; i >= 0; --i) {
         bit_vector.push_back(bits[i]);
     }
     
     return bit_vector;
 }
+
+#include <random>
+
+String Utils::generateRandomString(data_size length, const String& charset) {
+    if (charset.empty()) {
+        return "";
+    }
+
+    String random_string;
+    random_string.reserve(length);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, charset.length() - 1);
+
+    for (data_size i = 0; i < length; ++i) {
+        random_string += charset[distrib(gen)];
+    }
+
+    return random_string;
+}
+

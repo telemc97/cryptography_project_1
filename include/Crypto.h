@@ -119,6 +119,31 @@ public:
      */
     static String decrypt(const String &ciphertext, const String &key);
 
+    /**
+     * @brief Counts the number of differing bits between two strings.
+     * @param data1 The first string.
+     * @param data2 The second string.
+     * @return The number of bits that are different between the two strings.
+     */
+    static int32 countDiffBits(const String& data1, const String& data2);
+
+    /**
+     * @brief Encrypts a plaintext using AES in ECB mode.
+     * @param key The encryption key.
+     * @param plaintext The plaintext to encrypt.
+     * @return The encrypted ciphertext.
+     */
+    static String encryptECB(const String& key, const String& plaintext);
+
+    /**
+     * @brief Encrypts a plaintext using AES in CBC mode.
+     * @param key The encryption key.
+     * @param iv The initialization vector.
+     * @param plaintext The plaintext to encrypt.
+     * @return The encrypted ciphertext.
+     */
+    static String encryptCBC(const String& key, const String& iv, const String& plaintext);
+
 private:
     /**
      * @brief Finds the most frequent alphabetic character in a string.
@@ -180,6 +205,7 @@ private:
      * @return The calculated Index of Coincidence as a float.
      */
     static float32 calculateIC(const String& text);
+
 };
 
 #endif //CRYPTOGRAPHY1_CRYPTO_H
