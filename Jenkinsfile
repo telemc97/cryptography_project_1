@@ -10,7 +10,7 @@ pipeline {
         stage('Install OpenSSL') {
             steps {
                 script {
-                    sh 'sudo apt-get update && sudo apt-get install -y libssl-dev'
+                    sh 'apt-get update && apt-get install -y libssl-dev'
                 }
             }
         }
