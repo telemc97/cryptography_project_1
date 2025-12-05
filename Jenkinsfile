@@ -7,14 +7,6 @@ pipeline {
 
     stages {
 
-        stage('Install OpenSSL') {
-            steps {
-                script {
-                    sh 'apt-get update && apt-get install -y libssl-dev'
-                }
-            }
-        }
-
         stage('Create a Build Folder') {
             steps {
                 script {
