@@ -245,7 +245,7 @@ uint16 Crypto::encrypt16bit(const uint16 decrypted_msg) {
     return decrypted_msg ^ (static_cast<uint16>(decrypted_msg << 6)) ^ (static_cast<uint16>(decrypted_msg << 10));
 }
 
-String Crypto::generateOTPKey(data_size length, const String &charset) {
+String Crypto::generateOTPKey(datatype_size length, const String &charset) {
     String key;
     key.reserve(length);
     // Setup random number generator
@@ -253,7 +253,7 @@ String Crypto::generateOTPKey(data_size length, const String &charset) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, charset.length() - 1);
 
-    for (data_size i = 0; i < length; ++i) {
+    for (datatype_size i = 0; i < length; ++i) {
         int random_index = distrib(gen);
         key += charset[random_index];
     }

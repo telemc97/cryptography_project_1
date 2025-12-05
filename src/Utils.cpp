@@ -149,7 +149,7 @@ Vector(int32) Utils::intToBits(const int32 &value) {
 
 #include <random>
 
-String Utils::generateRandomString(data_size length, const String& charset) {
+String Utils::generateRandomString(datatype_size length, const String& charset) {
     if (charset.empty()) {
         return "";
     }
@@ -161,7 +161,7 @@ String Utils::generateRandomString(data_size length, const String& charset) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, charset.length() - 1);
 
-    for (data_size i = 0; i < length; ++i) {
+    for (datatype_size i = 0; i < length; ++i) {
         random_string += charset[distrib(gen)];
     }
 

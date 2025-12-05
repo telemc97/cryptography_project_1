@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <cstddef>
 
 #define int8   signed char
 #define int16  short
@@ -26,10 +27,10 @@
 #define float64  double
 
 // Boolean (C++ already has bool, but sometimes for C interop)
-#define boolean  unsigned char
+//#define boolean  unsigned char
 
-#define wide_char wchar_t
-#define data_size      size_t
+#define wide_char  wchar_t
+#define datatype_size  size_t
 
 // Macros for standard types
 #define Array(type, size)         std::array<type, size>

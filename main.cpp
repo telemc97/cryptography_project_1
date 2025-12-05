@@ -153,7 +153,7 @@ void exercise9() {
     constexpr uint32 iterations = 10;
     const String charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
     // Exercise asks for 2 X 128 bit  = 32byte
-    constexpr data_size length = 32;
+    constexpr datatype_size length = 32;
     constexpr uint32 totalbits = length * 8;
     const String key = Utils::generateRandomString(16, charset);
     const String iv = Utils::generateRandomString(16, charset);
@@ -181,8 +181,8 @@ void exercise9() {
     float32 avg_cbc = static_cast<float32>(dif_cbc) / iterations;
     float32 cbc_pct = avg_cbc/totalbits * 100.0;
 
-    Logger::instance().log("ECB avg diff bits: %d, Percentage: %d", avg_ecb, ecb_pct);
-    Logger::instance().log("CBC avg diff bits: %d, Percentage: %d", avg_cbc, cbc_pct);
+    Logger::instance().log("ECB avg diff bits: %f, Percentage: %f", avg_ecb, ecb_pct);
+    Logger::instance().log("CBC avg diff bits: %f, Percentage: %f", avg_cbc, cbc_pct);
 }
 
 int main() {
@@ -226,7 +226,7 @@ int main() {
     Logger::instance().print_separator();
     Logger::instance().log("Exercise 9:");
     Logger::instance().print_separator();
-    exercise6();
+    exercise9();
     Logger::instance().print_separator();
     Logger::instance().print_empty_line();
 

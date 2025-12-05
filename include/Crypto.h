@@ -95,7 +95,7 @@ public:
      * * @param length The number of 5-bit blocks (characters) needed.
      * @return std::vector<int> A vector of random integers (0-31).
      */
-    static String generateOTPKey(data_size length, const String &charset);
+    static String generateOTPKey(datatype_size length, const String &charset);
 
     /**
      * @brief Encrypts a plaintext message using a string key.
