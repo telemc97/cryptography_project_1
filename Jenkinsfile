@@ -10,6 +10,9 @@ pipeline {
         stage('Create a Build Folder') {
             steps {
                 script {
+                    if (params.CLEAN_BUILD) {
+                        sh 'rm -rf build'
+                    }
                     // Create a build directory
                     sh 'mkdir -p build'
                 }
