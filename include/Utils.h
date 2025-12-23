@@ -117,7 +117,9 @@ public:
      * @param charset The set of characters to choose from.
      * @return A string containing random characters from the charset.
      */
-    static String generateRandomString(datatype_size length, const String& charset);
+    static String generateRandomString(size_t length, const String& charset);
+
+    static bool isStringNumberValid(const String& number);
 };
 
 

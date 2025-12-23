@@ -7,7 +7,7 @@ This project is a C++ implementation of various cryptographic algorithms and mat
 The application runs a suite of cryptographic exercises:
 
 *   **Exercise 1: Polynomial Arithmetic**
-    *   Demonstrates polynomial division and modular arithmetic over GF(2).
+    *   Demonstrates polynomial division and modular arithmetic.
     *   Implements a custom `Polynomial` class.
 *   **Exercise 2: Classical Cryptanalysis**
     *   Performs Kasiski examination and Friedman test to estimate key lengths for polyalphabetic ciphers.

@@ -8,6 +8,8 @@
 #include <openssl/aes.h>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
+#include <gmpxx.h>
+
 
 Vector(WordOccurrences) Crypto::findRecurringWords(const String &message, const uint32 minLength) {
     if (message.length() < minLength || minLength == 0) {
@@ -105,8 +107,8 @@ uint32 Crypto::findKeyLengthKasiski(const String &message, const uint32 min_word
 }
 
 char Crypto::findMostFrequentCharInString(const String& text) {
-    Map(char, int) charCounts;
-    int maxCount = 0;
+    Map(char, int32) charCounts;
+    int32 maxCount = 0;
     char mostFrequent = ' '; // Default to space if no alphabetic chars
 
     for (char c : text) {
@@ -155,14 +157,14 @@ float32 Crypto::calculateIC(const String& text) {
         return 0.0; // Not enough characters to calculate IC
     }
 
-    Map(char, int) charCounts;
+    Map(char, int32) charCounts;
     for (char c : filteredText) {
         charCounts[c]++;
     }
 
     float64 sum_fi_minus_1 = 0.0;
     for (const auto& pair : charCounts) {
-        int fi = pair.second;
+        int32 fi = pair.second;
         sum_fi_minus_1 += (float64)fi * (fi - 1.0);
     }
 
@@ -245,7 +247,7 @@ uint16 Crypto::encrypt16bit(const uint16 decrypted_msg) {
     return decrypted_msg ^ (static_cast<uint16>(decrypted_msg << 6)) ^ (static_cast<uint16>(decrypted_msg << 10));
 }
 
-String Crypto::generateOTPKey(datatype_size length, const String &charset) {
+String Crypto::generateOTPKey(size_t length, const String &charset) {
     String key;
     key.reserve(length);
     // Setup random number generator
@@ -253,8 +255,8 @@ String Crypto::generateOTPKey(datatype_size length, const String &charset) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, charset.length() - 1);
 
-    for (datatype_size i = 0; i < length; ++i) {
-        int random_index = distrib(gen);
+    for (size_t i = 0; i < length; ++i) {
+        int32 random_index = distrib(gen);
         key += charset[random_index];
     }
     return key;
@@ -295,7 +297,7 @@ int32 Crypto::countDiffBits(const String& data1, const String& data2) {
     int32 diff_bits = 0;
     for (size_t i = 0; i < data1.length(); ++i) {
         // XOR the bytes. The '1's in the result are the differing bits.
-        unsigned char xor_val = data1[i] ^ data2[i];
+        uint8 xor_val = data1[i] ^ data2[i];
 
         // Count the '1's in the byte (using a simple loop or Kernighan's algorithm)
         while (xor_val > 0) {
@@ -312,27 +314,27 @@ String Crypto::encryptECB(const String& key, const String& plaintext) {
     }
 
     EVP_CIPHER_CTX *ctx;
-    int len;
-    int ciphertext_len;
+    int32 len;
+    int32 ciphertext_len;
 
     // Create and initialise the context
     if(!(ctx = EVP_CIPHER_CTX_new()))
         throw std::runtime_error("Failed to create new EVP_CIPHER_CTX");
 
     // Initialise the encryption operation.
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, reinterpret_cast<const unsigned char*>(key.c_str()), NULL))
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, reinterpret_cast<const uint8*>(key.c_str()), NULL))
         throw std::runtime_error("Failed to initialize encryption");
 
     String ciphertext;
     ciphertext.resize(plaintext.length() + AES_BLOCK_SIZE); // Make room for padding
 
     // Provide the message to be encrypted, and obtain the encrypted output.
-    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]), &len, reinterpret_cast<const unsigned char*>(plaintext.c_str()), plaintext.length()))
+    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<uint8*>(&ciphertext[0]), &len, reinterpret_cast<const uint8*>(plaintext.c_str()), plaintext.length()))
         throw std::runtime_error("Failed to update encryption");
     ciphertext_len = len;
 
     // Finalise the encryption.
-    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]) + len, &len))
+    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<uint8*>(&ciphertext[0]) + len, &len))
         throw std::runtime_error("Failed to finalize encryption");
     ciphertext_len += len;
 
@@ -352,27 +354,27 @@ String Crypto::encryptCBC(const String& key, const String& iv, const String& pla
     }
 
     EVP_CIPHER_CTX *ctx;
-    int len;
-    int ciphertext_len;
+    int32 len;
+    int32 ciphertext_len;
 
     // Create and initialise the context
     if(!(ctx = EVP_CIPHER_CTX_new()))
         throw std::runtime_error("Failed to create new EVP_CIPHER_CTX");
 
     // Initialise the encryption operation.
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, reinterpret_cast<const unsigned char*>(key.c_str()), reinterpret_cast<const unsigned char*>(iv.c_str())))
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, reinterpret_cast<const uint8*>(key.c_str()), reinterpret_cast<const uint8*>(iv.c_str())))
         throw std::runtime_error("Failed to initialize encryption");
 
     String ciphertext;
     ciphertext.resize(plaintext.length() + AES_BLOCK_SIZE); // Make room for padding
 
     // Provide the message to be encrypted, and obtain the encrypted output.
-    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]), &len, reinterpret_cast<const unsigned char*>(plaintext.c_str()), plaintext.length()))
+    if(1 != EVP_EncryptUpdate(ctx, reinterpret_cast<uint8*>(&ciphertext[0]), &len, reinterpret_cast<const uint8*>(plaintext.c_str()), plaintext.length()))
         throw std::runtime_error("Failed to update encryption");
     ciphertext_len = len;
 
     // Finalise the encryption.
-    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(&ciphertext[0]) + len, &len))
+    if(1 != EVP_EncryptFinal_ex(ctx, reinterpret_cast<uint8*>(&ciphertext[0]) + len, &len))
         throw std::runtime_error("Failed to finalize encryption");
     ciphertext_len += len;
 
@@ -381,4 +383,49 @@ String Crypto::encryptCBC(const String& key, const String& iv, const String& pla
 
     ciphertext.resize(ciphertext_len);
     return ciphertext;
+}
+
+String Crypto::calculateM1(const String &number) {
+    mpz_class n(number); // Μετατροπή string σε αριθμό GMP
+    mpz_class sum = 0;
+    mpz_class limit;
+
+    mpz_sqrt(limit.get_mpz_t(), n.get_mpz_t()); // limit = sqrt(n)
+
+    for (mpz_class s = 1; s <= limit; ++s) {
+        if (n % s == 0) {
+            sum += s;
+            mpz_class div = n / s;
+            if (div != s) {
+                sum += div;
+            }
+        }
+    }
+    return sum.get_str();
+}
+
+String Crypto::calculateM2(const String &number) {
+    mpz_class n(number); // Μετατροπή string σε αριθμό GMP
+    mpz_class total_sum = 0;
+
+    // s2 loop: 2 έως n-1
+    for (mpz_class s2 = 2; s2 < n; ++s2) {
+        // s1 loop: 1 έως s2-1
+        for (mpz_class s1 = 1; s1 < s2; ++s1) {
+
+            // Βελτιστοποίηση: m2 πηγαίνει μέχρι (n-1)/s2
+            mpz_class m2_limit = (n - 1) / s2;
+
+            for (mpz_class m2 = 1; m2 <= m2_limit; ++m2) {
+                mpz_class remainder = n - (m2 * s2);
+
+                // Ελέγχουμε αν το υπόλοιπο διαιρείται με το s1
+                if (remainder > 0 && remainder % s1 == 0) {
+                    mpz_class m1 = remainder / s1;
+                    total_sum += (m1 * m2);
+                }
+            }
+        }
+    }
+    return total_sum.get_str();
 }

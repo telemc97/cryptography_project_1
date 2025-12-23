@@ -1,3 +1,7 @@
+//
+// Created by Tilemahos Mitroudas on 23/12/25.
+//
+
 #include <cmath>
 #include <iostream>
 #include "Polynomial.h"
@@ -7,7 +11,7 @@
 #include <ctime>
 #include "Crypto.h"
 
-void exercise1() {
+void exercise1p1() {
     wide_char initial_message[24] = {L'ο',L'κ',L'η',L'θ',L'μ',L'φ',L'δ',L'ζ',L'θ',L'γ',L'ο',L'θ',
                                      L'χ',L'υ',L'κ',L'χ',L'σ',L'φ',L'θ',L'μ',L'φ',L'μ',L'χ',L'γ'};
     // x^2+3x+1
@@ -40,7 +44,7 @@ void exercise1() {
     std::cout << std::endl;
 }
 
-void exercise2() {
+void exercise2p1() {
     String text = "SCEELGZSSLCRFPWUTNTSBXAHRCCCMSAGVCAHYOQHQRKAHRTFRSAEFGDEGWOEGWBFVFGUSVEWOEGOALP"
                   "DRNGGZPSVFOXAUTBNBVVLACESFWUTRQPLSUEATZVKOMNGVREHTVPWNFAUEVBTLOAGGVRZBMNAPESPNV"
                   "FGBELTUVBTDPKRNDVWJEBSIESUIHZHUWOUZNBOJHIAVTVLPSORZBOAHRPFVLPCNYZNHHNQLCHKOOBGC"
@@ -92,7 +96,7 @@ void exercise2() {
     Logger::instance().log("Decrypted text is: \n %s", decrypted_text.c_str());
 }
 
-void exercise3() {
+void exercise3p1() {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     uint16 original_message = static_cast<uint16>(std::rand() % 65536);
@@ -107,7 +111,7 @@ void exercise3() {
     }
 }
 
-void exercise5() {
+void exercise5p1() {
     String charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.!?()-";
 
     const String message = "HELLO-WORLD";
@@ -129,7 +133,7 @@ void exercise5() {
     }
 }
 
-void exercise6() {
+void exercise6p1() {
     uint8 count = 0;
     constexpr uint8 degree = 5;
 
@@ -149,11 +153,11 @@ void exercise6() {
     Logger::instance().log("Found %i Primitive polynomials", count);
 }
 
-void exercise9() {
+void exercise9p1() {
     constexpr uint32 iterations = 10;
     const String charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
     // Exercise asks for 2 X 128 bit  = 32byte
-    constexpr datatype_size length = 32;
+    constexpr size_t length = 32;
     constexpr uint32 totalbits = length * 8;
     const String key = Utils::generateRandomString(16, charset);
     const String iv = Utils::generateRandomString(16, charset);
@@ -183,52 +187,4 @@ void exercise9() {
 
     Logger::instance().log("ECB avg diff bits: %f, Percentage: %f", avg_ecb, ecb_pct);
     Logger::instance().log("CBC avg diff bits: %f, Percentage: %f", avg_cbc, cbc_pct);
-}
-
-int main() {
-    std::setlocale(LC_ALL, "en_US.UTF-8");
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 1:");
-    Logger::instance().print_separator();
-    exercise1();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 2:");
-    Logger::instance().print_separator();
-    exercise2();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 3:");
-    Logger::instance().print_separator();
-    exercise3();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 5:");
-    Logger::instance().print_separator();
-    exercise5();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 6:");
-    Logger::instance().print_separator();
-    exercise6();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    Logger::instance().print_separator();
-    Logger::instance().log("Exercise 9:");
-    Logger::instance().print_separator();
-    exercise9();
-    Logger::instance().print_separator();
-    Logger::instance().print_empty_line();
-
-    return 0;
 }

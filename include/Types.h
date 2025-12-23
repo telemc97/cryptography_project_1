@@ -30,7 +30,6 @@
 //#define boolean  unsigned char
 
 #define wide_char  wchar_t
-#define datatype_size  size_t
 
 // Macros for standard types
 #define Array(type, size)         std::array<type, size>
