@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <cctype>
 
+#include <bitset>
+#include <random>
+
 int8 Utils::convertGreekCharToInt(wide_char character) {
     switch (character) {
         case L'Α': case L'α': return 1;
@@ -110,7 +113,6 @@ Vector(String) Utils::transposeVectorString(const Vector(String)& string_vector)
     return transposed_vector;
 }
 
-#include <bitset>
 
 String Utils::flatten(const Vector(String)& string_vector) {
     String flattened_string;
@@ -129,10 +131,6 @@ String Utils::toBitString(const String& value) {
     return bit_string;
 }
 
-#include <cstddef>
-#include <openssl/rand.h>
-#include <stdexcept>
-
 Vector(int32) Utils::intToBits(const int32 &value) {
     const int32 num_bits = sizeof(int32) * 8;
     std::bitset<num_bits> bits(value);
@@ -146,8 +144,6 @@ Vector(int32) Utils::intToBits(const int32 &value) {
     
     return bit_vector;
 }
-
-#include <random>
 
 String Utils::generateRandomString(size_t length, const String& charset) {
     if (charset.empty()) {
@@ -178,4 +174,3 @@ bool Utils::isStringNumberValid(const std::string &number) {
     }
     return true;
 }
-

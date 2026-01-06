@@ -23,6 +23,11 @@ void run_project2_exercise(const int exercise) {
     switch (exercise) {
         case 1: exercise1p2(); break;
         case 3: exercise3p2(); break;
+        case 9: exercise9p2(); break;
+        case 10: exercise10p2(); break;
+        case 11: exercise11p2(); break;
+        case 12: exercise12p2(); break;
+        case 13: exercise13p2(); break;
         default:
             Logger::instance().log("Exercise %d not found in Project 2.", exercise);
             break;

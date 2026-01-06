@@ -144,9 +144,23 @@ public:
      */
     static String encryptCBC(const String& key, const String& iv, const String& plaintext);
 
-    static String calculateM1(const String &number);
+    /**
+     * @brief Calculates the sum of all divisors of a given BigInt.
+     * @param number The BigInt to calculate the sum of divisors for.
+     * @return The sum of all divisors of the number.
+     */
+    static BigInt calculateM1(const BigInt &number);
 
-    static String calculateM2(const String &number);
+    /**
+     * @brief Calculates a specific sum M2 based on a cryptographic proposition.
+     *        M2 is defined by a nested summation involving remainders and divisibility.
+     * @param number The BigInt used as the upper bound in the summation.
+     * @return The calculated value M2.
+     */
+    static BigInt calculateM2(const BigInt &number);
+
+
+    static bool wienerAttack(const BigInt &N, const BigInt &e, BigInt &out_private_key, BigInt &out_q, BigInt &out_p);
 
 private:
     /**

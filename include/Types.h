@@ -10,17 +10,25 @@
 #include <string>
 #include <map>
 #include <cstddef>
+#include <gmpxx.h>
 
 #define int8   signed char
 #define int16  short
 #define int32  int
 #define int64  long long
+#define int128 __int128
 
 // Unsigned integer types
 #define uint8   unsigned char
 #define uint16  unsigned short
 #define uint32  unsigned int
 #define uint64  unsigned long long
+#define uint128 unsigned __int128
+
+// Large Integer (Arbitrary Precision)
+#define BigInt mpz_class
+
+// Floating point
 
 // Floating point
 #define float32  float

@@ -385,47 +385,99 @@ String Crypto::encryptCBC(const String& key, const String& iv, const String& pla
     return ciphertext;
 }
 
-String Crypto::calculateM1(const String &number) {
-    mpz_class n(number); // Μετατροπή string σε αριθμό GMP
-    mpz_class sum = 0;
-    mpz_class limit;
+BigInt Crypto::calculateM1(const BigInt &number) {
+    BigInt sum = 0;
+    BigInt limit;
 
-    mpz_sqrt(limit.get_mpz_t(), n.get_mpz_t()); // limit = sqrt(n)
+    mpz_sqrt(limit.get_mpz_t(), number.get_mpz_t()); // limit = sqrt(n)
 
-    for (mpz_class s = 1; s <= limit; ++s) {
-        if (n % s == 0) {
+    for (BigInt s = 1; s <= limit; ++s) {
+        if (number % s == 0) {
             sum += s;
-            mpz_class div = n / s;
+            BigInt div = number / s;
             if (div != s) {
                 sum += div;
             }
         }
     }
-    return sum.get_str();
+    return sum;
 }
 
-String Crypto::calculateM2(const String &number) {
-    mpz_class n(number); // Μετατροπή string σε αριθμό GMP
-    mpz_class total_sum = 0;
+BigInt Crypto::calculateM2(const BigInt &number) {
+    BigInt total_sum = 0;
 
-    // s2 loop: 2 έως n-1
-    for (mpz_class s2 = 2; s2 < n; ++s2) {
-        // s1 loop: 1 έως s2-1
-        for (mpz_class s1 = 1; s1 < s2; ++s1) {
+    // s2 loop: 2 to n-1
+    for (BigInt s2 = 2; s2 < number; ++s2) {
+        // s1 loop: 1 to s2-1
+        for (BigInt s1 = 1; s1 < s2; ++s1) {
 
-            // Βελτιστοποίηση: m2 πηγαίνει μέχρι (n-1)/s2
-            mpz_class m2_limit = (n - 1) / s2;
+            // Optimization: m2 goes up to (n-1)/s2
+            BigInt m2_limit = (number - 1) / s2;
 
-            for (mpz_class m2 = 1; m2 <= m2_limit; ++m2) {
-                mpz_class remainder = n - (m2 * s2);
+            for (BigInt m2 = 1; m2 <= m2_limit; ++m2) {
+                BigInt remainder = number - (m2 * s2);
 
-                // Ελέγχουμε αν το υπόλοιπο διαιρείται με το s1
+                // Check if the remainder is divisible by s1
                 if (remainder > 0 && remainder % s1 == 0) {
-                    mpz_class m1 = remainder / s1;
+                    BigInt m1 = remainder / s1;
                     total_sum += (m1 * m2);
                 }
             }
         }
     }
-    return total_sum.get_str();
+    return total_sum;
+}
+
+bool Crypto::wienerAttack(const BigInt &N, const BigInt &e, BigInt &out_private_key, BigInt &out_q, BigInt &out_p) {
+    BigInt n_prev = 0;
+    BigInt d_prev = 1;
+
+    BigInt n_curr = 1;
+    BigInt d_curr = 0;
+
+    BigInt a = e;
+    BigInt b = N;
+
+    while (b != 0) {
+        BigInt q = a / b;
+        BigInt temp = a;
+        a = b;
+        b = temp % b;
+
+        BigInt k = q * n_curr + n_prev;
+        BigInt d_candidate = q * d_curr + d_prev;
+
+        n_prev = n_curr;
+        d_prev = d_curr;
+
+        n_curr = k;
+        d_curr = d_candidate;
+
+        // Wiener Check
+        if (k == 0) continue;
+
+        if ((e * d_candidate - 1) % k != 0) continue;
+
+        BigInt phi = (e * d_candidate - 1) / k;
+
+        BigInt S = N - phi + 1;
+        BigInt D = S * S - 4 * N;
+
+        if (D >= 0) {
+            BigInt rootD = Math::sqrt(D);
+
+            if ((rootD * rootD == D) && ((S + rootD) % 2 == 0)) {
+                BigInt p = (S + rootD) / 2;
+                BigInt q = N / p;
+
+                if (p * q == N) {
+                    out_private_key = d_candidate;
+                    out_q = q;
+                    out_p = p;
+                    return  true;
+                }
+            }
+        }
+    }
+    return false;
 }

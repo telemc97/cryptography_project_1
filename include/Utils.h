@@ -119,6 +119,11 @@ public:
      */
     static String generateRandomString(size_t length, const String& charset);
 
+    /**
+     * @brief Checks if a string represents a valid unsigned integer.
+     * @param number The string to validate.
+     * @return True if the string is not empty and contains only digits, false otherwise.
+     */
     static bool isStringNumberValid(const String& number);
 };
 
