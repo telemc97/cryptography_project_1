@@ -135,11 +135,10 @@ public:
 
     /**
      * @brief Evaluates if the given integer is prime.
-     *        Uses a specific proposition involving cryptographic constants M1 and M2.
      * @param number The BigInt number to check for primality.
      * @return True if the number is prime, false otherwise.
      */
-    static bool isPrime(const BigInt &number);
+    static bool isPrimeMacMahon(const BigInt &number);
 
     /**
      * @brief Evaluates if the given integer is prime using a fast probabilistic test (Miller-Rabin).
@@ -192,6 +191,7 @@ public:
      * @return A vector containing all divisors of the number.
      */
     static Vector(int32) findDivisors(const int32 &number);
+    static Vector(BigInt) findDivisors(const BigInt &number);
 
     /**
      * @brief Checks if two numbers are amicable.

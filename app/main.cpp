@@ -23,6 +23,7 @@ void run_project2_exercise(const int exercise) {
     switch (exercise) {
         case 1: exercise1p2(); break;
         case 3: exercise3p2(); break;
+        case 8: exercise8p2(); break;
         case 9: exercise9p2(); break;
         case 10: exercise10p2(); break;
         case 11: exercise11p2(); break;

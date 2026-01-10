@@ -8,6 +8,7 @@
 #include "Logger.h"
 #include "Math.h"
 #include "Utils.h"
+#include <chrono>
 
 void exercise1p2() {
     constexpr uint8 bits = 200;
@@ -22,7 +23,7 @@ void exercise1p2() {
 
         Logger::instance().log("Attempt #%i, Checking %s ... ", attempts, candidate_number.get_str().c_str());
 
-        if (Math::isPrime(candidate_number)) {
+        if (Math::isPrimeMacMahon(candidate_number)) {
             Logger::instance().log("Prime Found");
             found = true;
         } else {
@@ -47,6 +48,35 @@ void exercise3p2() {
         }
     }
 }
+
+void exercise8p2() {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    BigInt k = 835335;
+    int32 exponent = 39014;
+
+    BigInt common_term = k * Math::pow(BigInt(2), exponent);
+
+    BigInt num1 = common_term - 1;
+    BigInt num2 = common_term + 1;
+
+    if (Math::squareAndMultiply(2, num1 - 1, num1) == 1) {
+        Logger::instance().log("Fermat test passed for N1: %s Its prime", num1.get_str().c_str());
+    } else {
+        Logger::instance().log("Its composite");
+    }
+
+    if (Math::squareAndMultiply(2, num2 - 1, num2) == 1) {
+        Logger::instance().log("Fermat test passed for N2: %s Its prime", num2.get_str().c_str());
+    } else {
+        Logger::instance().log("Its composite");
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    Logger::instance().log("Execution time: %lld ms", static_cast<long long>(duration.count()));
+}
+
 
 void exercise9p2() {
     BigInt number_1("4611686018427387904");

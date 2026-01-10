@@ -79,14 +79,12 @@ float64 Math::average(const Vector(float64)& values) {
     return sum(values) / static_cast<float64>(values.size());
 }
 
-bool Math::isPrime(const BigInt &number) {
-    if (number < 2) return false;
-    if (number > 2 && number % 2 == 0) return false;
+bool Math::isPrimeMacMahon(const BigInt &number) {
+    if (number < 2 || (number > 2 && number % 2 == 0)) return false;
 
     // 2. A: (n^2 - 3n + 2) * M1
     const BigInt m1_val(Crypto::calculateM1(number));
-    const BigInt term_poly = (number * number) - (3 * number) + 2;
-    const BigInt term_a = term_poly * m1_val;
+    const BigInt term_a = ((number * number) - (3 * number) + 2) * m1_val;
 
     // 3. B: 8 * M2
     // Call M2 passing the string
@@ -158,6 +156,23 @@ Vector(int32) Math::findDivisors(const int32 &number) {
     for (int32 i = 1; i <= number; ++i) {
         if (number % i == 0) {
             divisors.push_back(i);
+        }
+    }
+    return divisors;
+}
+
+Vector(BigInt) Math::findDivisors(const BigInt &number) {
+    Vector(BigInt) divisors;
+    BigInt limit;
+    mpz_sqrt(limit.get_mpz_t(), number.get_mpz_t());
+
+    for (BigInt s = 1; s <= limit; ++s) {
+        if (number % s == 0) {
+            divisors.push_back(s);
+            BigInt div = number / s;
+            if (div != s) {
+                divisors.push_back(div);
+            }
         }
     }
     return divisors;

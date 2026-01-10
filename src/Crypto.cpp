@@ -405,22 +405,26 @@ BigInt Crypto::calculateM1(const BigInt &number) {
 
 BigInt Crypto::calculateM2(const BigInt &number) {
     BigInt total_sum = 0;
+    BigInt limit = number / 2;
 
-    // s2 loop: 2 to n-1
-    for (BigInt s2 = 2; s2 < number; ++s2) {
-        // s1 loop: 1 to s2-1
-        for (BigInt s1 = 1; s1 < s2; ++s1) {
+    for (BigInt k = 1; k <= limit; ++k) {
+        BigInt A = k;
+        BigInt B = number - k;
 
-            // Optimization: m2 goes up to (n-1)/s2
-            BigInt m2_limit = (number - 1) / s2;
+        // Get divisors for partitions A and B
+        Vector(BigInt) divisorsA = Math::findDivisors(A);
+        Vector(BigInt) divisorsB = Math::findDivisors(B);
 
-            for (BigInt m2 = 1; m2 <= m2_limit; ++m2) {
-                BigInt remainder = number - (m2 * s2);
+        for (const BigInt &divisorA : divisorsA) {
+            for (const BigInt &divisorB : divisorsB) {
+                BigInt term = (A / divisorA) * (B / divisorB);
 
-                // Check if the remainder is divisible by s1
-                if (remainder > 0 && remainder % s1 == 0) {
-                    BigInt m1 = remainder / s1;
-                    total_sum += (m1 * m2);
+                if (divisorA < divisorB) {
+                    total_sum += term;
+                }
+
+                if (A != B && divisorB < divisorA) {
+                    total_sum += term;
                 }
             }
         }
